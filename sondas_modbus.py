@@ -153,30 +153,37 @@ def show_splash(root):
     tk.Frame(inner, height=1, bg=AVIOT_GRIS).pack(fill="x", padx=30, pady=3)
 
     # Driver
-    tk.Label(inner, text="¿No detecta el adaptador USB?",
+    tk.Label(inner, text="Instalacion del driver USB (CH340)",
              font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
              anchor="w").pack(fill="x", padx=30, pady=(5, 0))
 
     driver_text = (
-        "Si el programa no detecta el puerto, necesitas instalar\n"
-        "el driver del adaptador USB. El mas comun es el CH340:"
+        "Al terminar la instalacion se abre el instalador del driver.\n"
+        "Sigue estos pasos para completarlo:\n\n"
+        "  1. Se abrira la ventana del driver CH340\n"
+        "  2. Pulsa el boton 'INSTALL' (instalar)\n"
+        "  3. Espera a que diga 'Driver install success'\n"
+        "  4. Cierra la ventana del driver\n"
+        "  5. Conecta el adaptador USB-Modbus al portatil\n\n"
+        "Si ya tienes el driver instalado, puedes ignorar este paso."
     )
     tk.Label(inner, text=driver_text, font=("Arial", 10), fg="#555",
-             bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 3))
+             bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 5))
 
-    # Enlaces drivers
+    # Enlace por si necesitan otro driver
+    tk.Label(inner, text="¿Otro adaptador? Descarga el driver aqui:",
+             font=("Arial", 9), fg="#888", bg=AVIOT_BLANCO,
+             anchor="w").pack(fill="x", padx=30, pady=(0, 2))
+
     frame_links = tk.Frame(inner, bg=AVIOT_BLANCO)
     frame_links.pack(fill="x", padx=30)
 
-    for chip, url in DRIVER_URLS.items():
-        lbl = tk.Label(frame_links, text=f"Descargar driver {chip}",
-                      font=("Arial", 10, "underline"), fg="#1a73e8",
+    for i, (chip, url) in enumerate(DRIVER_URLS.items()):
+        lbl = tk.Label(frame_links, text=chip,
+                      font=("Arial", 9, "underline"), fg="#1a73e8",
                       bg=AVIOT_BLANCO, cursor="hand2")
-        lbl.pack(anchor="w")
+        lbl.grid(row=0, column=i, padx=(0, 10), sticky="w")
         lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
-
-    # Espacio
-    tk.Frame(inner, height=5, bg=AVIOT_BLANCO).pack()
 
     # Linea naranja inferior
     tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 10))
