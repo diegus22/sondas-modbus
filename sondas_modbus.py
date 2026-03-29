@@ -11,7 +11,6 @@ import serial.tools.list_ports
 import struct
 import time
 import threading
-import webbrowser
 import sys
 import os
 
@@ -69,12 +68,6 @@ AVIOT_GRIS_CLARO = "#f5f5f5"
 AVIOT_GRIS = "#e0e0e0"
 AVIOT_VERDE = "#4CAF50"
 AVIOT_ROJO = "#e53935"
-
-DRIVER_URLS = {
-    "CH340": "https://www.wch-ic.com/downloads/CH341SER_EXE.html",
-    "CP210x": "https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers",
-    "FTDI": "https://ftdichip.com/drivers/vcp-drivers/",
-}
 
 
 def show_splash(root):
@@ -170,20 +163,6 @@ def show_splash(root):
     tk.Label(inner, text=driver_text, font=("Arial", 10), fg="#555",
              bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 5))
 
-    # Enlace por si necesitan otro driver
-    tk.Label(inner, text="¿Otro adaptador? Descarga el driver aqui:",
-             font=("Arial", 9), fg="#888", bg=AVIOT_BLANCO,
-             anchor="w").pack(fill="x", padx=30, pady=(0, 2))
-
-    frame_links = tk.Frame(inner, bg=AVIOT_BLANCO)
-    frame_links.pack(fill="x", padx=30)
-
-    for i, (chip, url) in enumerate(DRIVER_URLS.items()):
-        lbl = tk.Label(frame_links, text=chip,
-                      font=("Arial", 9, "underline"), fg="#1a73e8",
-                      bg=AVIOT_BLANCO, cursor="hand2")
-        lbl.grid(row=0, column=i, padx=(0, 10), sticky="w")
-        lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
     # Linea naranja inferior
     tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 10))
@@ -373,22 +352,12 @@ class App:
             "4. Pulsa 'BUSCAR SONDA' para detectar el ID actual\n"
             "5. Introduce el nuevo ID y pulsa 'CAMBIAR ID'\n"
             "\n"
-            "Si no detecta el puerto, instala el driver del adaptador USB:"
+            "Si no detecta el puerto, reinstala el driver desde\n"
+            "la carpeta de instalacion (drivers/CH341SER.EXE)."
         )
         lbl_ayuda = ttk.Label(frame_ayuda, text=ayuda_text,
                               wraplength=450, justify="left", font=("Arial", 10))
         lbl_ayuda.grid(row=0, column=0, columnspan=3, sticky="w")
-
-        # Enlaces a drivers
-        frame_drivers = ttk.Frame(frame_ayuda)
-        frame_drivers.grid(row=1, column=0, columnspan=3, sticky="w", pady=(5, 0))
-
-        for i, (chip, url) in enumerate(DRIVER_URLS.items()):
-            lbl = tk.Label(frame_drivers, text=f"Driver {chip}",
-                          font=("Arial", 10, "underline"), fg="#1a73e8",
-                          bg=AVIOT_BLANCO, cursor="hand2")
-            lbl.grid(row=0, column=i, padx=(0, 15), sticky="w")
-            lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
         # --- Footer ---
         footer = ttk.Label(main, text="Aviot - Always Safe  |  aviot.es  |  Ingeniatic Desarrollo S.L.",
