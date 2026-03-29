@@ -11,8 +11,7 @@ import serial.tools.list_ports
 import struct
 import time
 import threading
-import base64
-import io
+import webbrowser
 import sys
 import os
 
@@ -71,6 +70,84 @@ AVIOT_GRIS = "#e0e0e0"
 AVIOT_VERDE = "#4CAF50"
 AVIOT_ROJO = "#e53935"
 
+DRIVER_URLS = {
+    "CH340": "https://www.wch-ic.com/downloads/CH341SER_EXE.html",
+    "CP210x": "https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers",
+    "FTDI": "https://ftdichip.com/drivers/vcp-drivers/",
+}
+
+
+def show_splash(root):
+    """Muestra splash screen de inicio con logo Aviot."""
+    splash = tk.Toplevel(root)
+    splash.overrideredirect(True)
+    splash.configure(bg=AVIOT_BLANCO)
+
+    # Centrar en pantalla
+    w, h = 450, 320
+    x = (splash.winfo_screenwidth() - w) // 2
+    y = (splash.winfo_screenheight() - h) // 2
+    splash.geometry(f"{w}x{h}+{x}+{y}")
+
+    # Borde naranja
+    border = tk.Frame(splash, bg=AVIOT_NARANJA, padx=3, pady=3)
+    border.pack(fill="both", expand=True)
+    inner = tk.Frame(border, bg=AVIOT_BLANCO)
+    inner.pack(fill="both", expand=True)
+
+    # Logo
+    try:
+        logo_path = resource_path("logo_aviot.png")
+        splash.logo_img = tk.PhotoImage(file=logo_path)
+        # Redimensionar
+        scale_x = max(1, splash.logo_img.width() // 220)
+        scale_y = max(1, splash.logo_img.height() // 65)
+        scale = max(scale_x, scale_y)
+        splash.logo_small = splash.logo_img.subsample(scale, scale)
+        tk.Label(inner, image=splash.logo_small, bg=AVIOT_BLANCO).pack(pady=(30, 10))
+    except Exception:
+        pass
+
+    # Textos
+    tk.Label(inner, text="CONFIGURADOR DE SONDAS",
+             font=("Arial", 20, "bold"), fg=AVIOT_NARANJA, bg=AVIOT_BLANCO).pack(pady=(5, 2))
+
+    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU",
+             font=("Arial", 11), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
+
+    # Linea naranja
+    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=40, pady=10)
+
+    tk.Label(inner, text="v2.0",
+             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO).pack()
+
+    tk.Label(inner, text="Ingeniatic Desarrollo S.L.",
+             font=("Arial", 10), fg="#aaa", bg=AVIOT_BLANCO).pack(pady=(2, 0))
+
+    # Barra de carga
+    progress = ttk.Progressbar(inner, length=300, mode='determinate',
+                                style="Aviot.Horizontal.TProgressbar")
+    progress.pack(pady=(15, 5))
+
+    tk.Label(inner, text="Iniciando...",
+             font=("Arial", 9), fg="#aaa", bg=AVIOT_BLANCO).pack()
+
+    splash.lift()
+    splash.focus_force()
+
+    # Animar barra de progreso
+    def animate(step=0):
+        if step <= 100:
+            progress['value'] = step
+            splash.after(20, animate, step + 2)
+        else:
+            splash.destroy()
+            root.deiconify()
+
+    root.withdraw()
+    animate()
+    return splash
+
 
 class App:
     def __init__(self, root):
@@ -121,6 +198,8 @@ class App:
                         foreground=AVIOT_ROJO, background=AVIOT_BLANCO)
         style.configure("Progress.TLabel", font=("Arial", 11),
                         foreground="#888", background=AVIOT_BLANCO)
+        style.configure("Link.TLabel", font=("Arial", 10, "underline"),
+                        foreground="#1a73e8", background=AVIOT_BLANCO, cursor="hand2")
 
         style.configure("Aviot.Horizontal.TProgressbar",
                         troughcolor=AVIOT_GRIS,
@@ -135,7 +214,6 @@ class App:
         frame_header.grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
         if self.logo_img:
-            # Redimensionar logo
             try:
                 small_logo = self.logo_img.subsample(
                     max(1, self.logo_img.width() // 180),
@@ -222,14 +300,23 @@ class App:
             "3. Pulsa 'Conectar' para abrir el puerto serie\n"
             "4. Pulsa 'BUSCAR SONDA' para detectar el ID actual\n"
             "5. Introduce el nuevo ID y pulsa 'CAMBIAR ID'\n"
-            "6. El programa verifica automaticamente el cambio\n"
             "\n"
-            "Importante: conecta solo UNA sonda a la vez para cambiar el ID.\n"
-            "Si no detecta el puerto, instala el driver del adaptador USB."
+            "Si no detecta el puerto, instala el driver del adaptador USB:"
         )
-        lbl_ayuda = ttk.Label(frame_ayuda, text=ayuda_text, style="Info.TLabel",
+        lbl_ayuda = ttk.Label(frame_ayuda, text=ayuda_text,
                               wraplength=450, justify="left", font=("Arial", 10))
-        lbl_ayuda.grid(row=0, column=0, sticky="w")
+        lbl_ayuda.grid(row=0, column=0, columnspan=3, sticky="w")
+
+        # Enlaces a drivers
+        frame_drivers = ttk.Frame(frame_ayuda)
+        frame_drivers.grid(row=1, column=0, columnspan=3, sticky="w", pady=(5, 0))
+
+        for i, (chip, url) in enumerate(DRIVER_URLS.items()):
+            lbl = tk.Label(frame_drivers, text=f"Driver {chip}",
+                          font=("Arial", 10, "underline"), fg="#1a73e8",
+                          bg=AVIOT_BLANCO, cursor="hand2")
+            lbl.grid(row=0, column=i, padx=(0, 15), sticky="w")
+            lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
         # --- Footer ---
         footer = ttk.Label(main, text="Aviot - Always Safe  |  aviot.es  |  Ingeniatic Desarrollo S.L.",
@@ -385,5 +472,13 @@ class App:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = App(root)
+
+    # Configurar estilo antes del splash
+    style = ttk.Style()
+    style.theme_use('clam')
+    style.configure("Aviot.Horizontal.TProgressbar",
+                    troughcolor=AVIOT_GRIS, background=AVIOT_NARANJA, thickness=20)
+
+    splash = show_splash(root)
+    root.after(2200, lambda: App(root))
     root.mainloop()
