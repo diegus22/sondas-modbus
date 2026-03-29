@@ -78,13 +78,13 @@ DRIVER_URLS = {
 
 
 def show_splash(root):
-    """Muestra splash screen de inicio con logo Aviot."""
+    """Muestra splash screen de inicio con logo Aviot e instrucciones."""
     splash = tk.Toplevel(root)
     splash.overrideredirect(True)
     splash.configure(bg=AVIOT_BLANCO)
 
     # Centrar en pantalla
-    w, h = 450, 320
+    w, h = 560, 580
     x = (splash.winfo_screenwidth() - w) // 2
     y = (splash.winfo_screenheight() - h) // 2
     splash.geometry(f"{w}x{h}+{x}+{y}")
@@ -99,47 +99,118 @@ def show_splash(root):
     try:
         logo_path = resource_path("logo_aviot.png")
         splash.logo_img = tk.PhotoImage(file=logo_path)
-        # Redimensionar
-        scale_x = max(1, splash.logo_img.width() // 220)
-        scale_y = max(1, splash.logo_img.height() // 65)
+        scale_x = max(1, splash.logo_img.width() // 200)
+        scale_y = max(1, splash.logo_img.height() // 60)
         scale = max(scale_x, scale_y)
         splash.logo_small = splash.logo_img.subsample(scale, scale)
-        tk.Label(inner, image=splash.logo_small, bg=AVIOT_BLANCO).pack(pady=(30, 10))
+        tk.Label(inner, image=splash.logo_small, bg=AVIOT_BLANCO).pack(pady=(20, 5))
     except Exception:
         pass
 
-    # Textos
+    # Titulo
     tk.Label(inner, text="CONFIGURADOR DE SONDAS",
              font=("Arial", 20, "bold"), fg=AVIOT_NARANJA, bg=AVIOT_BLANCO).pack(pady=(5, 2))
 
-    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU",
-             font=("Arial", 11), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
+    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU  |  v3.0",
+             font=("Arial", 10), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
 
     # Linea naranja
-    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=40, pady=10)
+    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=8)
 
-    tk.Label(inner, text="v2.0",
-             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO).pack()
+    # Que es este programa
+    tk.Label(inner, text="¿Que hace este programa?",
+             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             anchor="w").pack(fill="x", padx=30)
 
-    tk.Label(inner, text="Ingeniatic Desarrollo S.L.",
-             font=("Arial", 10), fg="#aaa", bg=AVIOT_BLANCO).pack(pady=(2, 0))
+    desc = (
+        "Este programa permite configurar las sondas de temperatura\n"
+        "y humedad que se conectan por Modbus RTU al bus RS485.\n"
+        "Detecta automaticamente la sonda conectada y permite\n"
+        "cambiar su direccion (ID) para instalarla en el sistema."
+    )
+    tk.Label(inner, text=desc, font=("Arial", 10), fg="#555", bg=AVIOT_BLANCO,
+             justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 8))
+
+    # Linea gris
+    tk.Frame(inner, height=1, bg=AVIOT_GRIS).pack(fill="x", padx=30, pady=3)
+
+    # Como conectar
+    tk.Label(inner, text="¿Como conectar la sonda?",
+             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             anchor="w").pack(fill="x", padx=30, pady=(5, 0))
+
+    pasos_conexion = (
+        "1. Conecta el adaptador USB-Modbus al portatil\n"
+        "2. Conecta UNA sola sonda al adaptador:\n"
+        "     - Cable A+ (dato positivo)\n"
+        "     - Cable B- (dato negativo)\n"
+        "     - Alimentacion 12-24V DC a la sonda"
+    )
+    tk.Label(inner, text=pasos_conexion, font=("Arial", 10), fg="#555",
+             bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 8))
+
+    # Linea gris
+    tk.Frame(inner, height=1, bg=AVIOT_GRIS).pack(fill="x", padx=30, pady=3)
+
+    # Driver
+    tk.Label(inner, text="¿No detecta el adaptador USB?",
+             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             anchor="w").pack(fill="x", padx=30, pady=(5, 0))
+
+    driver_text = (
+        "Si el programa no detecta el puerto, necesitas instalar\n"
+        "el driver del adaptador USB. El mas comun es el CH340:"
+    )
+    tk.Label(inner, text=driver_text, font=("Arial", 10), fg="#555",
+             bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 3))
+
+    # Enlaces drivers
+    frame_links = tk.Frame(inner, bg=AVIOT_BLANCO)
+    frame_links.pack(fill="x", padx=30)
+
+    for chip, url in DRIVER_URLS.items():
+        lbl = tk.Label(frame_links, text=f"Descargar driver {chip}",
+                      font=("Arial", 10, "underline"), fg="#1a73e8",
+                      bg=AVIOT_BLANCO, cursor="hand2")
+        lbl.pack(anchor="w")
+        lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
+
+    # Espacio
+    tk.Frame(inner, height=5, bg=AVIOT_BLANCO).pack()
+
+    # Linea naranja inferior
+    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 8))
 
     # Barra de carga
-    progress = ttk.Progressbar(inner, length=300, mode='determinate',
+    progress = ttk.Progressbar(inner, length=400, mode='determinate',
                                 style="Aviot.Horizontal.TProgressbar")
-    progress.pack(pady=(15, 5))
+    progress.pack(pady=(0, 3))
 
-    tk.Label(inner, text="Iniciando...",
-             font=("Arial", 9), fg="#aaa", bg=AVIOT_BLANCO).pack()
+    splash.lbl_estado = tk.Label(inner, text="Iniciando...",
+             font=("Arial", 9), fg="#aaa", bg=AVIOT_BLANCO)
+    splash.lbl_estado.pack()
+
+    # Footer
+    tk.Label(inner, text="Aviot - Always Safe  |  Ingeniatic Desarrollo S.L.",
+             font=("Arial", 8), fg="#ccc", bg=AVIOT_BLANCO).pack(pady=(3, 5))
 
     splash.lift()
     splash.focus_force()
 
-    # Animar barra de progreso
+    # Animar barra con mensajes
+    mensajes = {
+        0: "Iniciando...",
+        20: "Cargando interfaz...",
+        50: "Detectando puertos USB...",
+        80: "Listo para usar",
+    }
+
     def animate(step=0):
         if step <= 100:
             progress['value'] = step
-            splash.after(20, animate, step + 2)
+            if step in mensajes:
+                splash.lbl_estado.config(text=mensajes[step])
+            splash.after(30, animate, step + 2)
         else:
             splash.destroy()
             root.deiconify()
