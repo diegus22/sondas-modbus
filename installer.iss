@@ -1,6 +1,6 @@
 [Setup]
 AppName=Configurador de Sondas Aviot
-AppVersion=3.1
+AppVersion=3.4
 AppPublisher=Ingeniatic Desarrollo S.L.
 AppPublisherURL=https://aviot.es
 DefaultDirName={autopf}\Configurador Sondas Aviot
@@ -25,4 +25,15 @@ Name: "{group}\Configurador de Sondas Aviot"; Filename: "{app}\Configurador_Sond
 Name: "{autodesktop}\Configurador Sondas Aviot"; Filename: "{app}\Configurador_Sondas_Aviot.exe"
 
 [Run]
-Filename: "{app}\drivers\CH341SER.EXE"; Description: "Instalar driver USB (CH340)"; Flags: postinstall runascurrentuser waituntilterminated
+; Siempre abre la app (con splash de instrucciones)
+Filename: "{app}\Configurador_Sondas_Aviot.exe"; Flags: postinstall nowait skipifsilent
+; Solo abre el driver si NO esta instalado
+Filename: "{app}\drivers\CH341SER.EXE"; Flags: postinstall skipifsilent waituntilterminated; Check: not IsDriverInstalled
+
+[Code]
+function IsDriverInstalled: Boolean;
+begin
+  // Detecta driver CH340 en el registro de Windows
+  Result := RegKeyExists(HKLM, 'SYSTEM\CurrentControlSet\Services\CH341SER')
+         or RegKeyExists(HKLM, 'SYSTEM\CurrentControlSet\Services\CH341SER_A64');
+end;

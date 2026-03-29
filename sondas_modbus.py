@@ -151,14 +151,15 @@ def show_splash(root):
              anchor="w").pack(fill="x", padx=30, pady=(5, 0))
 
     driver_text = (
-        "Al terminar la instalacion se abre el instalador del driver.\n"
-        "Sigue estos pasos para completarlo:\n\n"
-        "  1. Se abrira la ventana del driver CH340\n"
-        "  2. Pulsa el boton 'INSTALL' (instalar)\n"
-        "  3. Espera a que diga 'Driver install success'\n"
-        "  4. Cierra la ventana del driver\n"
-        "  5. Conecta el adaptador USB-Modbus al portatil\n\n"
-        "Si ya tienes el driver instalado, puedes ignorar este paso."
+        "Si se ha abierto la ventana del instalador del driver,\n"
+        "sigue estos pasos para completarlo:\n\n"
+        "  1. En la ventana del driver CH340, pulsa 'INSTALL'\n"
+        "  2. Espera a que diga 'Driver install success'\n"
+        "  3. Pulsa 'OK' y cierra la ventana del driver\n"
+        "  4. Conecta el adaptador USB-Modbus al portatil\n"
+        "  5. Vuelve aqui y pulsa COMENZAR\n\n"
+        "Si no se ha abierto el instalador del driver, es que ya\n"
+        "lo tienes instalado. Pulsa COMENZAR directamente."
     )
     tk.Label(inner, text=driver_text, font=("Arial", 10), fg="#555",
              bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 5))
