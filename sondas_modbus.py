@@ -77,10 +77,11 @@ def show_splash(root):
     splash.title("Configurador de Sondas - Aviot")
 
     # Centrar en pantalla
-    w, h = 560, 580
+    w, h = 700, 720
     x = (splash.winfo_screenwidth() - w) // 2
-    y = (splash.winfo_screenheight() - h) // 2
+    y = max(20, (splash.winfo_screenheight() - h) // 2)
     splash.geometry(f"{w}x{h}+{x}+{y}")
+    splash.minsize(w, h)
 
     # Borde naranja
     border = tk.Frame(splash, bg=AVIOT_NARANJA, padx=3, pady=3)
@@ -102,17 +103,17 @@ def show_splash(root):
 
     # Titulo
     tk.Label(inner, text="CONFIGURADOR DE SONDAS",
-             font=("Arial", 20, "bold"), fg=AVIOT_NARANJA, bg=AVIOT_BLANCO).pack(pady=(5, 2))
+             font=("Arial", 24, "bold"), fg=AVIOT_NARANJA, bg=AVIOT_BLANCO).pack(pady=(5, 2))
 
-    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU  |  v3.0",
-             font=("Arial", 10), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
+    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU  |  v3.4",
+             font=("Arial", 12), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
 
     # Linea naranja
     tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=8)
 
     # Que es este programa
     tk.Label(inner, text="¿Que hace este programa?",
-             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             font=("Arial", 14, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
              anchor="w").pack(fill="x", padx=30)
 
     desc = (
@@ -121,7 +122,7 @@ def show_splash(root):
         "Detecta automaticamente la sonda conectada y permite\n"
         "cambiar su direccion (ID) para instalarla en el sistema."
     )
-    tk.Label(inner, text=desc, font=("Arial", 10), fg="#555", bg=AVIOT_BLANCO,
+    tk.Label(inner, text=desc, font=("Arial", 12), fg="#555", bg=AVIOT_BLANCO,
              justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 8))
 
     # Linea gris
@@ -129,7 +130,7 @@ def show_splash(root):
 
     # Como conectar
     tk.Label(inner, text="¿Como conectar la sonda?",
-             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             font=("Arial", 14, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
              anchor="w").pack(fill="x", padx=30, pady=(5, 0))
 
     pasos_conexion = (
@@ -139,7 +140,7 @@ def show_splash(root):
         "     - Cable B- (dato negativo)\n"
         "     - Alimentacion 12-24V DC a la sonda"
     )
-    tk.Label(inner, text=pasos_conexion, font=("Arial", 10), fg="#555",
+    tk.Label(inner, text=pasos_conexion, font=("Arial", 12), fg="#555",
              bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 8))
 
     # Linea gris
@@ -147,7 +148,7 @@ def show_splash(root):
 
     # Driver
     tk.Label(inner, text="Instalacion del driver USB (CH340)",
-             font=("Arial", 12, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
+             font=("Arial", 14, "bold"), fg=AVIOT_OSCURO, bg=AVIOT_BLANCO,
              anchor="w").pack(fill="x", padx=30, pady=(5, 0))
 
     driver_text = (
@@ -161,7 +162,7 @@ def show_splash(root):
         "Si no se ha abierto el instalador del driver, es que ya\n"
         "lo tienes instalado. Pulsa COMENZAR directamente."
     )
-    tk.Label(inner, text=driver_text, font=("Arial", 10), fg="#555",
+    tk.Label(inner, text=driver_text, font=("Arial", 12), fg="#555",
              bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 5))
 
 
@@ -173,7 +174,7 @@ def show_splash(root):
         splash.destroy()
         root.deiconify()
 
-    btn_comenzar = tk.Button(inner, text="COMENZAR", font=("Arial", 16, "bold"),
+    btn_comenzar = tk.Button(inner, text="COMENZAR", font=("Arial", 18, "bold"),
                              bg=AVIOT_NARANJA, fg=AVIOT_BLANCO,
                              activebackground=AVIOT_NARANJA_HOVER, activeforeground=AVIOT_BLANCO,
                              relief="flat", padx=40, pady=10, cursor="hand2",
