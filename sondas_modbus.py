@@ -86,8 +86,33 @@ def show_splash(root):
     # Borde naranja
     border = tk.Frame(splash, bg=AVIOT_NARANJA, padx=3, pady=3)
     border.pack(fill="both", expand=True)
-    inner = tk.Frame(border, bg=AVIOT_BLANCO)
-    inner.pack(fill="both", expand=True)
+
+    # Canvas con scroll
+    container = tk.Frame(border, bg=AVIOT_BLANCO)
+    container.pack(fill="both", expand=True)
+
+    canvas = tk.Canvas(container, bg=AVIOT_BLANCO, highlightthickness=0)
+    scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    scrollbar.pack(side="right", fill="y")
+    canvas.pack(side="left", fill="both", expand=True)
+
+    inner = tk.Frame(canvas, bg=AVIOT_BLANCO)
+    canvas_window = canvas.create_window((0, 0), window=inner, anchor="nw")
+
+    def on_configure(event=None):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(canvas_window, width=canvas.winfo_width())
+
+    inner.bind("<Configure>", on_configure)
+    canvas.bind("<Configure>", on_configure)
+
+    # Scroll con rueda del raton
+    def on_mousewheel(event):
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    canvas.bind_all("<MouseWheel>", on_mousewheel)
 
     # Logo
     try:
@@ -105,7 +130,7 @@ def show_splash(root):
     tk.Label(inner, text="CONFIGURADOR DE SONDAS",
              font=("Arial", 24, "bold"), fg=AVIOT_NARANJA, bg=AVIOT_BLANCO).pack(pady=(5, 2))
 
-    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU  |  v3.4",
+    tk.Label(inner, text="Temperatura y Humedad  |  Modbus RTU  |  v3.5",
              font=("Arial", 12), fg="#888", bg=AVIOT_BLANCO).pack(pady=(0, 5))
 
     # Linea naranja
@@ -165,12 +190,12 @@ def show_splash(root):
     tk.Label(inner, text=driver_text, font=("Arial", 12), fg="#555",
              bg=AVIOT_BLANCO, justify="left", anchor="w").pack(fill="x", padx=30, pady=(2, 5))
 
-
     # Linea naranja inferior
-    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 10))
+    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(10, 10))
 
     # Boton COMENZAR
     def comenzar():
+        canvas.unbind_all("<MouseWheel>")
         splash.destroy()
         root.deiconify()
 
@@ -179,11 +204,11 @@ def show_splash(root):
                              activebackground=AVIOT_NARANJA_HOVER, activeforeground=AVIOT_BLANCO,
                              relief="flat", padx=40, pady=10, cursor="hand2",
                              command=comenzar)
-    btn_comenzar.pack(pady=(0, 10))
+    btn_comenzar.pack(pady=(0, 15))
 
     # Footer
     tk.Label(inner, text="Aviot - Always Safe  |  Ingeniatic Desarrollo S.L.",
-             font=("Arial", 8), fg="#ccc", bg=AVIOT_BLANCO).pack(pady=(0, 8))
+             font=("Arial", 8), fg="#ccc", bg=AVIOT_BLANCO).pack(pady=(0, 15))
 
     splash.lift()
     splash.focus_force()
