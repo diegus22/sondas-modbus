@@ -80,8 +80,8 @@ DRIVER_URLS = {
 def show_splash(root):
     """Muestra splash screen de inicio con logo Aviot e instrucciones."""
     splash = tk.Toplevel(root)
-    splash.overrideredirect(True)
     splash.configure(bg=AVIOT_BLANCO)
+    splash.title("Configurador de Sondas - Aviot")
 
     # Centrar en pantalla
     w, h = 560, 580
@@ -179,44 +179,38 @@ def show_splash(root):
     tk.Frame(inner, height=5, bg=AVIOT_BLANCO).pack()
 
     # Linea naranja inferior
-    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 8))
+    tk.Frame(inner, height=3, bg=AVIOT_NARANJA).pack(fill="x", padx=30, pady=(5, 10))
 
-    # Barra de carga
-    progress = ttk.Progressbar(inner, length=400, mode='determinate',
-                                style="Aviot.Horizontal.TProgressbar")
-    progress.pack(pady=(0, 3))
+    # Boton COMENZAR
+    def comenzar():
+        splash.destroy()
+        root.deiconify()
 
-    splash.lbl_estado = tk.Label(inner, text="Iniciando...",
-             font=("Arial", 9), fg="#aaa", bg=AVIOT_BLANCO)
-    splash.lbl_estado.pack()
+    btn_comenzar = tk.Button(inner, text="COMENZAR", font=("Arial", 16, "bold"),
+                             bg=AVIOT_NARANJA, fg=AVIOT_BLANCO,
+                             activebackground=AVIOT_NARANJA_HOVER, activeforeground=AVIOT_BLANCO,
+                             relief="flat", padx=40, pady=10, cursor="hand2",
+                             command=comenzar)
+    btn_comenzar.pack(pady=(0, 10))
 
     # Footer
     tk.Label(inner, text="Aviot - Always Safe  |  Ingeniatic Desarrollo S.L.",
-             font=("Arial", 8), fg="#ccc", bg=AVIOT_BLANCO).pack(pady=(3, 5))
+             font=("Arial", 8), fg="#ccc", bg=AVIOT_BLANCO).pack(pady=(0, 8))
 
     splash.lift()
     splash.focus_force()
 
-    # Animar barra con mensajes
-    mensajes = {
-        0: "Iniciando...",
-        20: "Cargando interfaz...",
-        50: "Detectando puertos USB...",
-        80: "Listo para usar",
-    }
+    # Icono
+    try:
+        logo_path = resource_path("logo_aviot.png")
+        splash.iconphoto(True, tk.PhotoImage(file=logo_path))
+    except Exception:
+        pass
 
-    def animate(step=0):
-        if step <= 100:
-            progress['value'] = step
-            if step in mensajes:
-                splash.lbl_estado.config(text=mensajes[step])
-            splash.after(30, animate, step + 2)
-        else:
-            splash.destroy()
-            root.deiconify()
+    # Cerrar splash con X tambien abre la app
+    splash.protocol("WM_DELETE_WINDOW", comenzar)
 
     root.withdraw()
-    animate()
     return splash
 
 
@@ -550,6 +544,13 @@ if __name__ == "__main__":
     style.configure("Aviot.Horizontal.TProgressbar",
                     troughcolor=AVIOT_GRIS, background=AVIOT_NARANJA, thickness=20)
 
+    app_holder = {}
+
+    def on_splash_close():
+        if not app_holder:
+            app_holder['app'] = App(root)
+
     splash = show_splash(root)
-    root.after(2200, lambda: App(root))
+    # La App se crea cuando el usuario pulsa COMENZAR (via splash.destroy -> root.deiconify)
+    root.bind("<Map>", lambda e: on_splash_close())
     root.mainloop()
