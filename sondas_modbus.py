@@ -146,9 +146,13 @@ class App:
 
     def actualizar_puertos(self):
         puertos = serial.tools.list_ports.comports()
-        usb = [p.device for p in puertos if 'usb' in p.device.lower()]
-        self.combo_puerto['values'] = usb if usb else ["No se detectan puertos"]
-        if usb:
+        encontrados = []
+        for p in puertos:
+            texto = f"{p.device} {p.description} {p.hwid}".lower()
+            if 'usb' in texto or 'serial' in texto or 'ch340' in texto or 'cp210' in texto or 'ftdi' in texto:
+                encontrados.append(f"{p.device} - {p.description}")
+        self.combo_puerto['values'] = encontrados if encontrados else ["No se detectan puertos"]
+        if encontrados:
             self.combo_puerto.current(0)
 
     def toggle_conexion(self):
@@ -158,7 +162,7 @@ class App:
             self.btn_conectar.config(text="Conectar")
             self.lbl_estado.config(text="Desconectado", style="Error.TLabel")
         else:
-            puerto = self.combo_puerto.get()
+            puerto = self.combo_puerto.get().split(" - ")[0].strip()
             if not puerto or "No se detectan" in puerto:
                 messagebox.showerror("Error", "Conecta el adaptador USB-Modbus y pulsa Actualizar.")
                 return
