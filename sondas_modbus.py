@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Sondas Modbus - Herramienta para cambiar ID de sondas de temperatura/humedad.
-Interfaz gráfica sencilla para uso en campo.
+Configurador de Sondas Aviot
+Herramienta para cambiar ID de sondas Modbus de temperatura/humedad.
 """
 
 import tkinter as tk
@@ -11,6 +11,17 @@ import serial.tools.list_ports
 import struct
 import time
 import threading
+import base64
+import io
+import sys
+import os
+
+
+def resource_path(relative_path):
+    """Ruta a recursos empaquetados con PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 def crc16_modbus(data):
@@ -50,42 +61,111 @@ def cambiar_id_sonda(ser, id_actual, id_nuevo):
     return False
 
 
+# Colores corporativos Aviot
+AVIOT_NARANJA = "#f39200"
+AVIOT_NARANJA_HOVER = "#e08500"
+AVIOT_OSCURO = "#1d1d1b"
+AVIOT_BLANCO = "#ffffff"
+AVIOT_GRIS_CLARO = "#f5f5f5"
+AVIOT_GRIS = "#e0e0e0"
+AVIOT_VERDE = "#4CAF50"
+AVIOT_ROJO = "#e53935"
+
+
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sondas Modbus - Cambiar ID")
+        self.root.title("Configurador de Sondas - Aviot")
         self.root.resizable(False, False)
+        self.root.configure(bg=AVIOT_BLANCO)
         self.ser = None
         self.buscando = False
         self.id_encontrado = None
 
-        # Estilo
+        # Icono
+        try:
+            logo_path = resource_path("logo_aviot.png")
+            self.logo_img = tk.PhotoImage(file=logo_path)
+            self.root.iconphoto(True, self.logo_img)
+        except Exception:
+            self.logo_img = None
+
+        # Estilo corporativo Aviot
         style = ttk.Style()
-        style.configure("Big.TButton", font=("Arial", 14), padding=10)
-        style.configure("Header.TLabel", font=("Arial", 16, "bold"))
-        style.configure("Info.TLabel", font=("Arial", 13))
-        style.configure("Result.TLabel", font=("Arial", 14, "bold"))
-        style.configure("OK.TLabel", font=("Arial", 14, "bold"), foreground="green")
-        style.configure("Error.TLabel", font=("Arial", 14, "bold"), foreground="red")
-        style.configure("Progress.TLabel", font=("Arial", 12), foreground="#666")
+        style.theme_use('clam')
+
+        style.configure(".", background=AVIOT_BLANCO, foreground=AVIOT_OSCURO)
+        style.configure("TFrame", background=AVIOT_BLANCO)
+        style.configure("TLabelframe", background=AVIOT_BLANCO, foreground=AVIOT_OSCURO,
+                        font=("Arial", 11, "bold"))
+        style.configure("TLabelframe.Label", background=AVIOT_BLANCO, foreground=AVIOT_NARANJA,
+                        font=("Arial", 11, "bold"))
+
+        style.configure("Aviot.TButton",
+                        font=("Arial", 13, "bold"),
+                        padding=10,
+                        background=AVIOT_NARANJA,
+                        foreground=AVIOT_BLANCO)
+        style.map("Aviot.TButton",
+                  background=[('active', AVIOT_NARANJA_HOVER), ('pressed', AVIOT_OSCURO)])
+
+        style.configure("Header.TLabel", font=("Arial", 18, "bold"),
+                        foreground=AVIOT_NARANJA, background=AVIOT_BLANCO)
+        style.configure("Sub.TLabel", font=("Arial", 10),
+                        foreground="#888", background=AVIOT_BLANCO)
+        style.configure("Info.TLabel", font=("Arial", 13),
+                        foreground=AVIOT_OSCURO, background=AVIOT_BLANCO)
+        style.configure("OK.TLabel", font=("Arial", 14, "bold"),
+                        foreground=AVIOT_VERDE, background=AVIOT_BLANCO)
+        style.configure("Error.TLabel", font=("Arial", 14, "bold"),
+                        foreground=AVIOT_ROJO, background=AVIOT_BLANCO)
+        style.configure("Progress.TLabel", font=("Arial", 11),
+                        foreground="#888", background=AVIOT_BLANCO)
+
+        style.configure("Aviot.Horizontal.TProgressbar",
+                        troughcolor=AVIOT_GRIS,
+                        background=AVIOT_NARANJA,
+                        thickness=20)
 
         main = ttk.Frame(root, padding=20)
         main.grid(sticky="nsew")
 
-        # Titulo
-        ttk.Label(main, text="SONDAS MODBUS", style="Header.TLabel").grid(
-            row=0, column=0, columnspan=3, pady=(0, 15))
+        # Logo + Titulo
+        frame_header = ttk.Frame(main)
+        frame_header.grid(row=0, column=0, columnspan=3, pady=(0, 10))
+
+        if self.logo_img:
+            # Redimensionar logo
+            try:
+                small_logo = self.logo_img.subsample(
+                    max(1, self.logo_img.width() // 180),
+                    max(1, self.logo_img.height() // 50)
+                )
+                self.small_logo = small_logo
+                ttk.Label(frame_header, image=self.small_logo, background=AVIOT_BLANCO).grid(
+                    row=0, column=0, pady=(0, 5))
+            except Exception:
+                pass
+
+        ttk.Label(frame_header, text="CONFIGURADOR DE SONDAS", style="Header.TLabel").grid(
+            row=1, column=0)
+        ttk.Label(frame_header, text="Temperatura y Humedad  |  Modbus RTU", style="Sub.TLabel").grid(
+            row=2, column=0)
+
+        # Linea separadora naranja
+        sep = tk.Frame(main, height=3, bg=AVIOT_NARANJA)
+        sep.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(0, 10))
 
         # --- Conexion ---
         frame_con = ttk.LabelFrame(main, text=" Conexion ", padding=10)
-        frame_con.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(0, 10))
+        frame_con.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(0, 10))
 
         ttk.Label(frame_con, text="Puerto:", font=("Arial", 12)).grid(row=0, column=0, sticky="w")
         self.combo_puerto = ttk.Combobox(frame_con, width=30, font=("Arial", 12), state="readonly")
         self.combo_puerto.grid(row=0, column=1, padx=5)
         ttk.Button(frame_con, text="Actualizar", command=self.actualizar_puertos).grid(row=0, column=2, padx=5)
 
-        self.btn_conectar = ttk.Button(frame_con, text="Conectar", style="Big.TButton",
+        self.btn_conectar = ttk.Button(frame_con, text="Conectar", style="Aviot.TButton",
                                         command=self.toggle_conexion)
         self.btn_conectar.grid(row=1, column=0, columnspan=3, pady=(10, 0), sticky="ew")
 
@@ -94,16 +174,17 @@ class App:
 
         # --- Buscar sonda ---
         frame_buscar = ttk.LabelFrame(main, text=" 1. Buscar sonda conectada ", padding=10)
-        frame_buscar.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(0, 10))
+        frame_buscar.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(0, 10))
 
-        self.btn_buscar = ttk.Button(frame_buscar, text="BUSCAR SONDA", style="Big.TButton",
+        self.btn_buscar = ttk.Button(frame_buscar, text="BUSCAR SONDA", style="Aviot.TButton",
                                       command=self.buscar_sonda)
         self.btn_buscar.grid(row=0, column=0, columnspan=3, sticky="ew")
 
         self.lbl_progreso = ttk.Label(frame_buscar, text="", style="Progress.TLabel")
         self.lbl_progreso.grid(row=1, column=0, columnspan=3, pady=(5, 0))
 
-        self.progress = ttk.Progressbar(frame_buscar, length=400, mode='determinate')
+        self.progress = ttk.Progressbar(frame_buscar, length=400, mode='determinate',
+                                         style="Aviot.Horizontal.TProgressbar")
         self.progress.grid(row=2, column=0, columnspan=3, pady=(5, 0))
 
         self.lbl_sonda = ttk.Label(frame_buscar, text="", style="Info.TLabel")
@@ -117,19 +198,43 @@ class App:
 
         # --- Cambiar ID ---
         frame_cambiar = ttk.LabelFrame(main, text=" 2. Cambiar ID ", padding=10)
-        frame_cambiar.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(0, 10))
+        frame_cambiar.grid(row=4, column=0, columnspan=3, sticky="ew", pady=(0, 10))
 
         ttk.Label(frame_cambiar, text="Nuevo ID (1-247):", font=("Arial", 12)).grid(row=0, column=0, sticky="w")
         self.spin_id_nuevo = ttk.Spinbox(frame_cambiar, from_=1, to=247, width=5, font=("Arial", 14))
         self.spin_id_nuevo.grid(row=0, column=1, padx=5, sticky="w")
         self.spin_id_nuevo.set(2)
 
-        self.btn_cambiar = ttk.Button(frame_cambiar, text="CAMBIAR ID", style="Big.TButton",
+        self.btn_cambiar = ttk.Button(frame_cambiar, text="CAMBIAR ID", style="Aviot.TButton",
                                        command=self.cambiar)
         self.btn_cambiar.grid(row=0, column=2, padx=5)
 
         self.lbl_resultado = ttk.Label(frame_cambiar, text="", style="Info.TLabel")
         self.lbl_resultado.grid(row=1, column=0, columnspan=3, pady=(10, 0))
+
+        # --- Ayuda ---
+        frame_ayuda = ttk.LabelFrame(main, text=" Ayuda ", padding=10)
+        frame_ayuda.grid(row=5, column=0, columnspan=3, sticky="ew", pady=(0, 10))
+
+        ayuda_text = (
+            "1. Conecta el adaptador USB-Modbus al portatil\n"
+            "2. Conecta UNA sola sonda (cables A+, B- y alimentacion 12-24V)\n"
+            "3. Pulsa 'Conectar' para abrir el puerto serie\n"
+            "4. Pulsa 'BUSCAR SONDA' para detectar el ID actual\n"
+            "5. Introduce el nuevo ID y pulsa 'CAMBIAR ID'\n"
+            "6. El programa verifica automaticamente el cambio\n"
+            "\n"
+            "Importante: conecta solo UNA sonda a la vez para cambiar el ID.\n"
+            "Si no detecta el puerto, instala el driver del adaptador USB."
+        )
+        lbl_ayuda = ttk.Label(frame_ayuda, text=ayuda_text, style="Info.TLabel",
+                              wraplength=450, justify="left", font=("Arial", 10))
+        lbl_ayuda.grid(row=0, column=0, sticky="w")
+
+        # --- Footer ---
+        footer = ttk.Label(main, text="Aviot - Always Safe  |  aviot.es  |  Ingeniatic Desarrollo S.L.",
+                          font=("Arial", 9), foreground="#aaa", background=AVIOT_BLANCO)
+        footer.grid(row=6, column=0, columnspan=3, pady=(5, 0))
 
         # Detectar puertos al inicio
         self.actualizar_puertos()

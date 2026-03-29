@@ -17,14 +17,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyserial pyinstaller
+          pip install pyserial pyinstaller Pillow
 
       - name: Build EXE
         run: |
-          pyinstaller --onefile --windowed --name "Sondas_Modbus" sondas_modbus.py
+          pyinstaller --onefile --windowed --name "Configurador_Sondas_Aviot" --icon=aviot.ico --add-data "logo_aviot.png;." sondas_modbus.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Sondas_Modbus_Windows
-          path: dist/Sondas_Modbus.exe
+          name: Configurador_Sondas_Aviot
+          path: dist/Configurador_Sondas_Aviot.exe
