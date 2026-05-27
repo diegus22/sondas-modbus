@@ -23,6 +23,10 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name "Configurador_Sondas_Aviot" --icon=aviot.ico --add-data "logo_aviot.png;." sondas_modbus.py
 
+      - name: Build EXE Diagnostico
+        run: |
+          pyinstaller --onefile --windowed --name "Configurador_Sondas_Diag" --icon=aviot.ico --add-data "logo_aviot.png;." sondas_modbus_diag.py
+
       - name: Download CH340 driver
         run: |
           mkdir drivers
@@ -37,6 +41,12 @@ jobs:
         with:
           name: Configurador_Sondas_Aviot
           path: dist/Configurador_Sondas_Aviot.exe
+
+      - name: Upload EXE Diagnostico
+        uses: actions/upload-artifact@v4
+        with:
+          name: Configurador_Sondas_Diag
+          path: dist/Configurador_Sondas_Diag.exe
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4

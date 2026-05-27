@@ -1,6 +1,6 @@
 [Setup]
 AppName=Configurador de Sondas Aviot
-AppVersion=3.4
+AppVersion=3.7
 AppPublisher=Ingeniatic Desarrollo S.L.
 AppPublisherURL=https://aviot.es
 DefaultDirName={autopf}\Configurador Sondas Aviot
@@ -20,11 +20,14 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Files]
 Source: "dist\Configurador_Sondas_Aviot.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\Configurador_Sondas_Diag.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "drivers\CH341SER.EXE"; DestDir: "{app}\drivers"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\Configurador de Sondas Aviot"; Filename: "{app}\Configurador_Sondas_Aviot.exe"
+Name: "{group}\Diagnostico de Sondas Aviot"; Filename: "{app}\Configurador_Sondas_Diag.exe"
 Name: "{autodesktop}\Configurador Sondas Aviot"; Filename: "{app}\Configurador_Sondas_Aviot.exe"
+Name: "{autodesktop}\Diagnostico Sondas Aviot"; Filename: "{app}\Configurador_Sondas_Diag.exe"
 
 [Run]
 ; Siempre abre la app (con splash de instrucciones)
